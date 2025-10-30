@@ -414,7 +414,6 @@ class AsyncVLLMInferenceEngine(BaseVLLMInferenceEngine):
         # support OAI-style tool calling; and `request_logger` for better debugging.
         self.openai_serving_chat = OpenAIServingChat(
             engine_client=engine,
-            model_config=model_config,
             models=models,
             response_role="assistant",
             request_logger=None,
