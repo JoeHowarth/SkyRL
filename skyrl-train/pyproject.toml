@@ -45,6 +45,7 @@ dependencies = [
     "uvicorn",
     "pybind11",
     "setuptools",
+    "trl>=0.19.1",
 ]
 
 [tool.uv]

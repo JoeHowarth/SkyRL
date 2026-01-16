@@ -79,11 +79,40 @@ bash examples/catch/run_catch.sh \
 - May need to disable ref model or use LoRA to reduce memory
 - Or use multiple GPUs with model sharding
 
+## SFT Warm-start (Recommended)
+The base model outputs gibberish instead of L/R/S. Use SFT to teach the format first:
+
+```bash
+cd skyrl-train
+
+# 1. Generate SFT data (random actions to learn format only)
+uv run python -m examples.catch.sft_dataset \
+    --output_dir "$HOME/data/catch_sft" \
+    --action_mode random
+
+# 2. Run SFT (takes ~3 min)
+uv run python -m examples.catch.run_sft \
+    --model_name "Qwen/Qwen3-0.6B-Base" \
+    --data_dir "$HOME/data/catch_sft" \
+    --output_dir "$HOME/models/catch_sft" \
+    --batch_size 4
+
+# 3. Run RL with SFT model
+bash examples/catch/run_catch.sh \
+    trainer.policy.model.path=$HOME/models/catch_sft \
+    generator.batched=true \
+    trainer.logger=tensorboard
+```
+
+**action_mode options:**
+- `random`: Teaches format only, RL learns policy (recommended)
+- `optimal`: Teaches format + optimal policy, RL fine-tunes
+
 ## Next steps / checkpoints
-- Fix OOM and verify training runs to completion.
-- Verify shaped reward learns (track `catch_rate` in env metrics).
-- Tune batch sizes and vLLM settings for single GPU stability.
-- Switch to episodic reward and compare learning curves.
+- Run SFT warm-start before RL training
+- Verify shaped reward learns (track `catch_rate` in env metrics)
+- Tune batch sizes and vLLM settings for single GPU stability
+- Switch to episodic reward and compare learning curves
 
 ## Keep this file up to date
 If you change the Catch setup, reward design, run commands, or defaults, update this file immediately so the next agent can pick up without re-discovery.
